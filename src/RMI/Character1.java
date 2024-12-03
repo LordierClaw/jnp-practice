@@ -5,6 +5,7 @@ import jdk.nashorn.internal.parser.JSONParser;
 import java.rmi.Naming;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 
 /*
 [Mã câu hỏi (qCode): 2RfgpBHj].  Một chương trình (tạm gọi là RMI Server) cung cấp giao diện cho phép triệu gọi từ xa để xử lý chuỗi.
@@ -42,6 +43,22 @@ public class Character1 {
         CharacterService service = (CharacterService) Naming.lookup(HOST);
 
         String json = service.requestCharacter(STUDENT_CODE, Q_CODE);
-
+        String[] pairs = json.substring(1, json.length()-1).split(",");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < pairs.length; i+=2) {
+            String pair = pairs[i].replace("\"", "").trim();
+            sb.append(pair).append(", ");
+        }
+        sb.deleteCharAt(sb.length()-1);
+        sb.deleteCharAt(sb.length()-1);
+        sb.append("; ");
+        for (int i = 1; i < pairs.length; i+=2) {
+            String pair = pairs[i].replace("\"", "").trim();
+            sb.append(pair).append(", ");
+        }
+        sb.deleteCharAt(sb.length()-1);
+        sb.deleteCharAt(sb.length()-1);
+        System.out.println(sb);
+        service.submitCharacter(STUDENT_CODE, Q_CODE, sb.toString());
     }
 }
