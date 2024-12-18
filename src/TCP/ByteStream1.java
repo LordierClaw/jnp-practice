@@ -9,11 +9,15 @@ Một chương trình server hỗ trợ kết nối qua giao thức TCP tại c�
     d. Đóng kết nối và kết thúc chương trình.
  */
 
+/*
+Note: đề sai, dãy con không cần phải liên tiếp
+ */
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedList;
 
 public class ByteStream1 {
     private static final String HOST = "203.162.10.109";
@@ -31,7 +35,7 @@ public class ByteStream1 {
              InputStream in = socket.getInputStream();
              OutputStream out = socket.getOutputStream();) {
 
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[10240];
             out.write(getKey().getBytes(), 0, getKey().getBytes().length);
             out.flush();
 
@@ -44,27 +48,40 @@ public class ByteStream1 {
             for (String x: a) {
                 try {
                     arr.add(Integer.parseInt(x));
-                } catch (NumberFormatException ex) {
-                    break;
+                } catch (NumberFormatException ignored) {
                 }
             }
-            System.out.println(Arrays.toString(arr.toArray()));
 
-            int lmax, gmax;
-            lmax = gmax = 1;
+            ArrayList<LinkedList<Integer>> list = new ArrayList<>();
 
-            for (int i = 1; i < arr.size(); i++) {
-                if (arr.get(i) > arr.get(i-1)) {
-                    lmax ++;
-                } else {
-                    if (lmax > gmax) {
-                        gmax = lmax;
+            int maxI = 0;
+            for (int i = 0; i < arr.size(); i++) {
+                list.add(new LinkedList<>());
+                int maxJ = 0;
+                for (int j = 0; j < i; j++) {
+                    if (arr.get(j) < arr.get(i)) {
+                        if (list.get(j).size() > list.get(maxJ).size()) {
+                            maxJ = j;
+                        }
                     }
-                    lmax = 1;
+                }
+                list.get(i).addAll(list.get(maxJ));
+                list.get(i).add(arr.get(i));
+
+                if (list.get(i).size() > list.get(maxI).size()) {
+                    maxI = i;
                 }
             }
 
-            out.write(gmax);
+            StringBuilder sb = new StringBuilder();
+            for(Integer x: list.get(maxI)) {
+                sb.append(x).append(',');
+            }
+            sb.deleteCharAt(sb.length()-1);
+            sb.append(';').append(list.get(maxI).size());
+            System.out.println(sb);
+
+            out.write(sb.toString().getBytes(), 0, sb.toString().getBytes().length);
             out.flush();
         } catch (Exception e) {
             e.printStackTrace();
